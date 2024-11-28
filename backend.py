@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
@@ -30,28 +31,24 @@ def add_item():
 
 @app.route('/items/<int:id>', methods=['PUT'])
 def update_item(id):
-    try:
-        item = Item.query.get_or_404(id)
-        data = request.json
-        item.name = data['name']
-        item.quantity = data['quantity']
-        item.price = data['price']
-        db.session.commit()
-        return jsonify({'message': 'Item updated successfully'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    data = request.get_json()
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({'message': 'Item not found'}), 404
+    item.name = data['name']
+    item.quantity = data['quantity']
+    item.price = data['price']
+    db.session.commit()
+    return jsonify({'message': 'Item updated successfully'})
 
 @app.route('/items/<int:id>', methods=['DELETE'])
 def delete_item(id):
-    try:
-        item = Item.query.get_or_404(id)
-        db.session.delete(item)
-        db.session.commit()
-        return jsonify({'message': 'Item deleted successfully'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({'message': 'Item not found'}), 404
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({'message': 'Item deleted successfully'})
 
 if __name__ == '__main__':
     db.create_all()
