@@ -1,3 +1,5 @@
+console.log('Script loaded');
+
 // Initialize when document loads
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded');
