@@ -1,87 +1,101 @@
-// Global variable to track if we're editing an item
-let currentlyEditing = null;
-
-// Wait for DOM to load
+// Initialize when document loads
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded');
+    loadItems();  // Load initial items
 
-    // Get the button and add click event listener
-    const submitButton = document.getElementById('submitButton');
-    if (submitButton) {
-        console.log('Found submit button');
-        submitButton.addEventListener('click', function (e) {
-            console.log('Button clicked');
-            e.preventDefault();
-            handleSubmit();
-        });
-    } else {
-        console.error('Submit button not found!');
+    // Add event listener to Add Item button
+    const addButton = document.querySelector('button[type="button"]');
+    if (addButton) {
+        addButton.addEventListener('click', addItem);
     }
-
-    // Load initial items
-    loadItems();
 });
 
-function handleSubmit() {
-    console.log('handleSubmit called');
-    if (currentlyEditing) {
-        updateItem(currentlyEditing);
-    } else {
-        addItem();
-    }
+// Function to load items
+function loadItems() {
+    console.log('Loading items...');
+    fetch('/items')
+        .then(response => response.json())
+        .then(items => {
+            const tableBody = document.querySelector('tbody');
+            tableBody.innerHTML = ''; // Clear existing items
+
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>
+                        <button onclick="editItem(${item.id})" class="edit-btn">Edit</button>
+                        <button onclick="deleteItem(${item.id})" class="delete-btn">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading items:', error);
+        });
 }
 
+// Function to add item
 function addItem() {
-    console.log('addItem function called');
-
-    // Get form values
-    const nameInput = document.getElementById('itemName');
-    const quantityInput = document.getElementById('quantity');
-    const priceInput = document.getElementById('price');
-
-    console.log('Form elements:', { nameInput, quantityInput, priceInput });
-
-    const name = nameInput.value;
-    const quantity = quantityInput.value;
-    const price = priceInput.value;
-
-    console.log('Values:', { name, quantity, price });
+    const name = document.getElementById('itemName').value;
+    const quantity = document.getElementById('quantity').value;
+    const price = document.getElementById('price').value;
 
     if (!name || !quantity || !price) {
         alert('Please fill in all fields');
         return;
     }
 
-    const data = {
-        name: name,
-        quantity: parseInt(quantity),
-        price: parseFloat(price)
-    };
-
-    console.log('Sending data:', data);
-
     fetch('/items', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
         },
-        body: JSON.stringify(data)
-    })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
+        body: JSON.stringify({
+            name: name,
+            quantity: parseInt(quantity),
+            price: parseFloat(price)
         })
+    })
+        .then(response => response.json())
         .then(data => {
             console.log('Success:', data);
-            alert('Item added successfully');
-            clearForm();
+            // Clear form
+            document.getElementById('itemName').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('price').value = '';
+            // Reload items
             loadItems();
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error adding item: ' + error.message);
+            alert('Error adding item');
         });
 }
 
-// ... rest of your existing code ... 
+// Function to delete item
+function deleteItem(id) {
+    if (confirm('Are you sure you want to delete this item?')) {
+        fetch(`/items/${id}`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(() => {
+                loadItems(); // Reload the items list
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting item');
+            });
+    }
+}
+
+// Function to edit item
+function editItem(id) {
+    // Implementation for edit functionality
+    console.log('Edit item:', id);
+    // Add your edit logic here
+} 
