@@ -6,13 +6,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Inventory Management</h1>
+        <h1>INVENTORY MANAGEMENT</h1>
         
         <div class="form-container">
-            <input type="text" id="itemName" placeholder="Item Name" required>
-            <input type="number" id="quantity" placeholder="Quantity" required>
-            <input type="number" step="0.01" id="price" placeholder="Price" required>
-            <button type="button" id="addButton">Add Item</button>
+            <input type="text" id="itemName" placeholder="Item Name">
+            <input type="number" id="quantity" placeholder="Quantity">
+            <input type="number" step="0.01" id="price" placeholder="Price">
+            <button onclick="addItem()">Add Item</button>
         </div>
 
         <table>
@@ -24,16 +24,10 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="itemsTableBody">
-                <!-- Items will be loaded here -->
+            <tbody id="itemsTable">
             </tbody>
         </table>
     </div>
-
-    <script>
-        // Add the base URL for API calls
-        const BASE_URL = window.location.origin;
-    </script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html> 
