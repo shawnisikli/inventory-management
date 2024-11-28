@@ -1,55 +1,75 @@
-// Add console logs for debugging
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded');
-    loadItems();
+// Global variable to track if we're editing an item
+let currentlyEditing = null;
 
-    // Add event listener to the submit button
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOM loaded');
+
+    // Get the button and add click event listener
     const submitButton = document.getElementById('submitButton');
     if (submitButton) {
-        console.log('Submit button found');
-        submitButton.addEventListener('click', handleSubmit);
+        console.log('Found submit button');
+        submitButton.addEventListener('click', function (e) {
+            console.log('Button clicked');
+            e.preventDefault();
+            handleSubmit();
+        });
     } else {
-        console.error('Submit button not found');
+        console.error('Submit button not found!');
     }
+
+    // Load initial items
+    loadItems();
 });
 
 function handleSubmit() {
-    console.log('Handle Submit Called');
+    console.log('handleSubmit called');
     if (currentlyEditing) {
-        console.log('Updating existing item');
         updateItem(currentlyEditing);
     } else {
-        console.log('Adding new item');
         addItem();
     }
 }
 
 function addItem() {
-    console.log('Add Item Function Called');
-    const name = document.getElementById('itemName').value;
-    const quantity = document.getElementById('quantity').value;
-    const price = document.getElementById('price').value;
+    console.log('addItem function called');
 
-    console.log('Form Values:', { name, quantity, price });
+    // Get form values
+    const nameInput = document.getElementById('itemName');
+    const quantityInput = document.getElementById('quantity');
+    const priceInput = document.getElementById('price');
+
+    console.log('Form elements:', { nameInput, quantityInput, priceInput });
+
+    const name = nameInput.value;
+    const quantity = quantityInput.value;
+    const price = priceInput.value;
+
+    console.log('Values:', { name, quantity, price });
 
     if (!name || !quantity || !price) {
         alert('Please fill in all fields');
         return;
     }
 
+    const data = {
+        name: name,
+        quantity: parseInt(quantity),
+        price: parseFloat(price)
+    };
+
+    console.log('Sending data:', data);
+
     fetch('/items', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json'
         },
-        body: JSON.stringify({
-            name: name,
-            quantity: parseInt(quantity),
-            price: parseFloat(price)
-        })
+        body: JSON.stringify(data)
     })
         .then(response => {
-            console.log('Response received:', response.status);
+            console.log('Response status:', response.status);
             return response.json();
         })
         .then(data => {
@@ -60,6 +80,8 @@ function addItem() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error adding item');
+            alert('Error adding item: ' + error.message);
         });
-} 
+}
+
+// ... rest of your existing code ... 

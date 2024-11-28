@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
@@ -23,11 +22,34 @@ def get_items():
 
 @app.route('/items', methods=['POST'])
 def add_item():
-    data = request.get_json()
-    new_item = Item(name=data['name'], quantity=data['quantity'], price=data['price'])
-    db.session.add(new_item)
-    db.session.commit()
-    return jsonify({'message': 'Item added successfully'}), 201
+    print("Received POST request to /items")
+    try:
+        data = request.get_json()
+        print(f"Received data: {data}")
+        
+        new_item = Item(
+            name=data['name'],
+            quantity=data['quantity'],
+            price=data['price']
+        )
+        
+        db.session.add(new_item)
+        db.session.commit()
+        
+        print("Item added successfully")
+        return jsonify({
+            'message': 'Item added successfully',
+            'item': {
+                'id': new_item.id,
+                'name': new_item.name,
+                'quantity': new_item.quantity,
+                'price': new_item.price
+            }
+        })
+    except Exception as e:
+        print(f"Error adding item: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/items/<int:id>', methods=['PUT'])
 def update_item(id):
