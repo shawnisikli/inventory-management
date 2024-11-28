@@ -1,11 +1,19 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-import os
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
+
+# Use PostgreSQL URL from environment variable if available, otherwise use SQLite
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
+# Heroku/Render postgres URL fix
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 class Item(db.Model):
@@ -53,7 +61,13 @@ def delete_item(id):
     return jsonify({'message': 'Item deleted successfully'})
 
 if __name__ == '__main__':
-    db.create_all()
-    app.run(debug=True)
+    with app.app_context():
+        db.create_all()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+else:
+    # This ensures tables are created even when not running as main
+    with app.app_context():
+        db.create_all()
 
 
