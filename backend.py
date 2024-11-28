@@ -92,3 +92,18 @@ def delete_item(id):
 if __name__ == "__main__":
     db.create_all()
     app.run(debug=True)
+
+
+@app.route("/items/<int:id>", methods=["DELETE"])
+def delete_item(id):
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({"message": "Item not found"}), 404
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Item deleted successfully"})
+
+
+if __name__ == "__main__":
+    db.create_all()
+    app.run(debug=True)
