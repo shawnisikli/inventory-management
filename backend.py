@@ -1,18 +1,9 @@
+
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-import os
 
 app = Flask(__name__)
-CORS(app)
-
-# Use PostgreSQL URL from environment variable if available, otherwise use SQLite
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
 db = SQLAlchemy(app)
 
 class Item(db.Model):
@@ -23,7 +14,6 @@ class Item(db.Model):
 
 @app.route('/')
 def index():
-    print("Index route accessed")
     return render_template('index.html')
 
 @app.route('/items', methods=['GET'])
@@ -60,25 +50,8 @@ def delete_item(id):
     db.session.commit()
     return jsonify({'message': 'Item deleted successfully'})
 
-def add_test_data():
-    print("Checking if database needs test data...")
-    if not Item.query.first():
-        test_items = [
-            Item(name="Laptop", quantity=5, price=999.99),
-            Item(name="Mouse", quantity=10, price=24.99),
-            Item(name="Keyboard", quantity=8, price=59.99)
-        ]
-        for item in test_items:
-            db.session.add(item)
-        db.session.commit()
-        print("Added test data to database")
-
 if __name__ == '__main__':
-    app.app_context().push()  # Add this line to fix the context error
     db.create_all()
-    add_test_data()
-    port = int(os.environ.get('PORT', 5000))
-    print(f"Starting server on port {port}...")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)
 
 
