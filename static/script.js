@@ -108,4 +108,16 @@ window.onclick = function (event) {
     if (event.target == modal) {
         modal.style.display = 'none';
     }
-} 
+}
+// Show notification
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// Initial fetch
+document.addEventListener('DOMContentLoaded', fetchItems);

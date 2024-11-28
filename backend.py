@@ -8,7 +8,6 @@ CORS(app)
 
 # Use PostgreSQL URL from environment variable if available, otherwise use SQLite
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
-# Heroku/Render postgres URL fix
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -24,6 +23,7 @@ class Item(db.Model):
 
 @app.route('/')
 def index():
+    print("Index route accessed")
     return render_template('index.html')
 
 @app.route('/items', methods=['GET'])
@@ -60,14 +60,25 @@ def delete_item(id):
     db.session.commit()
     return jsonify({'message': 'Item deleted successfully'})
 
+def add_test_data():
+    print("Checking if database needs test data...")
+    if not Item.query.first():
+        test_items = [
+            Item(name="Laptop", quantity=5, price=999.99),
+            Item(name="Mouse", quantity=10, price=24.99),
+            Item(name="Keyboard", quantity=8, price=59.99)
+        ]
+        for item in test_items:
+            db.session.add(item)
+        db.session.commit()
+        print("Added test data to database")
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    app.app_context().push()  # Add this line to fix the context error
+    db.create_all()
+    add_test_data()
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-else:
-    # This ensures tables are created even when not running as main
-    with app.app_context():
-        db.create_all()
+    print(f"Starting server on port {port}...")
+    app.run(host='0.0.0.0', port=port, debug=True)
 
 
