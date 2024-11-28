@@ -1,1 +1,34 @@
- 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>INVENTORY MANAGEMENT</h1>
+        
+        <div class="form-container">
+            <input type="text" id="itemName" placeholder="Item Name">
+            <input type="number" id="quantity" placeholder="Quantity">
+            <input type="number" step="0.01" id="price" placeholder="Price">
+            <button type="button">Add Item</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Items will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 
