@@ -1,4 +1,3 @@
-// Add debug logging
 console.log('Script loaded!');
 
 async function addItem() {
@@ -17,10 +16,11 @@ async function addItem() {
 
     try {
         console.log('Sending POST request...');
-        const response = await fetch('/items', {
+        const response = await fetch(`${BASE_URL}/items`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 name: name,
@@ -29,11 +29,21 @@ async function addItem() {
             })
         });
 
-        console.log('Response received:', response.status);
+        console.log('Response status:', response.status);
+        const contentType = response.headers.get('content-type');
+        console.log('Response content type:', contentType);
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to add item');
+            let errorMessage;
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                errorMessage = errorData.error;
+            } else {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                errorMessage = 'Server error occurred';
+            }
+            throw new Error(errorMessage || 'Failed to add item');
         }
 
         const data = await response.json();
@@ -45,7 +55,7 @@ async function addItem() {
         document.getElementById('price').value = '';
 
         // Refresh the items list
-        loadItems();
+        await loadItems();
 
     } catch (error) {
         console.error('Error:', error);
@@ -56,16 +66,29 @@ async function addItem() {
 async function loadItems() {
     console.log('Loading items...');
     try {
-        const response = await fetch('/items');
+        const response = await fetch(`${BASE_URL}/items`);
+
+        console.log('Load items response status:', response.status);
+        const contentType = response.headers.get('content-type');
+        console.log('Load items content type:', contentType);
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to load items');
+            let errorMessage;
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                errorMessage = errorData.error;
+            } else {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                errorMessage = 'Server error occurred';
+            }
+            throw new Error(errorMessage || 'Failed to load items');
         }
 
         const items = await response.json();
         console.log('Items loaded:', items);
 
-        const tableBody = document.querySelector('table tbody');
+        const tableBody = document.getElementById('itemsTableBody');
         tableBody.innerHTML = '';
 
         items.forEach(item => {
@@ -87,10 +110,9 @@ async function loadItems() {
     }
 }
 
-// Also add a click event listener
+// Add event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded');
-    loadItems();
 
     // Add click event listener to the button
     const addButton = document.getElementById('addButton');
@@ -100,4 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Add button not found!');
     }
+
+    // Load initial items
+    loadItems();
 }); 
