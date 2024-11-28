@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
+CORS(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
 db = SQLAlchemy(app)
 
 class Item(db.Model):
@@ -51,10 +53,7 @@ def delete_item(id):
     return jsonify({'message': 'Item deleted successfully'})
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    # Use environment variable for port if available (for deployment)
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    db.create_all()
+    app.run(debug=True)
 
 
